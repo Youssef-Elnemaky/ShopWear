@@ -3,7 +3,7 @@ namespace ShopWear.DataAccess.Models.Product;
 
 public class ProductImage
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public string ImageUrl { get; set; } = null!;
 
     // Navigation
