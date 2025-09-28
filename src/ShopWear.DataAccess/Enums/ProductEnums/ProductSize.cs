@@ -1,4 +1,4 @@
-namespace ShopWear.DataAccess.Enums;
+namespace ShopWear.DataAccess.Enums.ProductEnums;
 
 public enum ProductSize
 {

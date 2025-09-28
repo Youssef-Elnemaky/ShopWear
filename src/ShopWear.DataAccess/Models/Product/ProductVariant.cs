@@ -1,4 +1,4 @@
-using ShopWear.DataAccess.Enums;
+using ShopWear.DataAccess.Enums.ProductEnums;
 
 namespace ShopWear.DataAccess.Models.Product;
 
