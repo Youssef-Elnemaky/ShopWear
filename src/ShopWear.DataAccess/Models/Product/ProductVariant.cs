@@ -1,6 +1,6 @@
 using ShopWear.DataAccess.Enums.ProductEnums;
 
-namespace ShopWear.DataAccess.Models.Product;
+namespace ShopWear.DataAccess.Models.Products;
 
 
 public class ProductVariant

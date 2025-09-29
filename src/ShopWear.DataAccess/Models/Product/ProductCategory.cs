@@ -1,4 +1,4 @@
-namespace ShopWear.DataAccess.Models.Product;
+namespace ShopWear.DataAccess.Models.Products;
 
 
 public class ProductCategory
