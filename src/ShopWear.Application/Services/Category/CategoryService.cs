@@ -15,7 +15,7 @@ public sealed class CategoryService : ICategoryService
         _uow = uow;
     }
 
-    public async Task<Result<Created>> CreateCategoryAsync(CreateCategoryRequest request)
+    public async Task<Result<CategoryResponse>> CreateCategoryAsync(CreateCategoryRequest request)
     {
         var category = new ProductCategory()
         {
@@ -26,7 +26,14 @@ public sealed class CategoryService : ICategoryService
         await _uow.ProductCategories.AddAsync(category);
         await _uow.SaveAsync();
 
-        return ResultTypes.Created;
+        var catRes = new CategoryResponse()
+        {
+            Id = category.Id,
+            Name = category.Name,
+            Description = category.Description
+        };
+
+        return catRes;
     }
 
     public async Task<Result<Deleted>> DeleteCategoryAsync(int id)
