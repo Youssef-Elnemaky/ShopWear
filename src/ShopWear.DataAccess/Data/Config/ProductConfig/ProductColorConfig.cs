@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using ShopWear.DataAccess.Models.Product;
+using ShopWear.DataAccess.Models.Products;
 
 namespace ShopWear.DataAccess.Data.Config.ProductConfig;
 
