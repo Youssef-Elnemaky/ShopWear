@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using ShopWear.DataAccess.Models.Product;
+using ShopWear.DataAccess.Models.Products;
 
 namespace ShopWear.DataAccess.Data;
 
