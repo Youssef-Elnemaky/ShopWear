@@ -16,6 +16,7 @@ public sealed class CategoryService : ICategoryService
     }
 
     public async Task<Result<CategoryResponse>> CreateCategoryAsync(CreateCategoryRequest request)
+    public async Task<Result<CategoryResponse>> CreateCategoryAsync(CreateCategoryRequest request)
     {
         var category = new ProductCategory()
         {
