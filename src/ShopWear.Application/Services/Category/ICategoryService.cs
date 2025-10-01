@@ -7,7 +7,7 @@ namespace ShopWear.Application.Services.Category;
 
 public interface ICategoryService
 {
-    Task<Result<Created>> CreateCategoryAsync(CreateCategoryRequest request);
+    Task<Result<CategoryResponse>> CreateCategoryAsync(CreateCategoryRequest request);
     Task<Result<IReadOnlyList<CategoryResponse>>> GetCategoriesAsync();
     Task<Result<CategoryResponse>> GetCategoryAsync(int id);
     Task<Result<Updated>> UpdateCategoryAsync(int id, UpdateCategoryRequest request);

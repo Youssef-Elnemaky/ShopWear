@@ -1,5 +1,8 @@
+using System.Text.Json.Serialization;
+
 namespace ShopWear.Application.Common.Errors;
 
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum ErrorKind
 {
     Failure = 0,
