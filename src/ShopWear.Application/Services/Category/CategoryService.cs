@@ -17,6 +17,10 @@ public sealed class CategoryService : ICategoryService
 
     public async Task<Result<CategoryResponse>> CreateCategoryAsync(CreateCategoryRequest request)
     {
+        //check if the name is unique
+        var exists = await _uow.ProductCategories.GetAsync(c => c.Name == request.Name);
+        if (exists is not null) return CategoryError.CategoryNameExists(request.Name);
+
         var category = new ProductCategory()
         {
             Name = request.Name,
@@ -80,6 +84,11 @@ public sealed class CategoryService : ICategoryService
     {
         var category = await _uow.ProductCategories.GetAsync(c => c.Id == id);
         if (category is null) return CategoryError.NotFound(id);
+
+        //don't allow duplicate category names
+        var exists = await _uow.ProductCategories.GetAsync(c => c.Name == request.Name);
+        if (exists is not null) return CategoryError.CategoryNameExists(request.Name);
+
 
         category.Name = request.Name;
         category.Description = request.Description;
