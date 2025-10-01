@@ -19,7 +19,7 @@ public class Program
         });
 
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-        builder.Services.AddOpenApi();
+        // builder.Services.AddOpenApi(); // Already added in AddApiServices
 
         var app = builder.Build();
 

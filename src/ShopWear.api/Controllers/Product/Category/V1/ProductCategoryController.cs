@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using ShopWear.Application.Common.Errors;
 using ShopWear.Application.Common.Pagination;
 using ShopWear.Application.Dtos.Requests.Category;
+using ShopWear.Application.Dtos.Responses.Category;
 using ShopWear.Application.Services.Category;
 
 namespace ShopWear.api.Controllers.Product.Category.V1;
@@ -24,7 +25,12 @@ public class ProductCategoryController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult> CreateCategory(CreateCategoryRequest request)
+    [Consumes("application/json")]
+    [ProducesResponseType<CategoryResponse>(StatusCodes.Status201Created)]
+    [ProducesResponseType<Error>(StatusCodes.Status409Conflict)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<CategoryResponse>> CreateCategory(CreateCategoryRequest request)
     {
         logger.LogInformation("CreateCategory called with {@request}", request);
         var result = await categoryService.CreateCategoryAsync(request);
@@ -37,25 +43,26 @@ public class ProductCategoryController : ControllerBase
             },
             errors =>
             {
-                var type = errors.First().Kind;
-                switch (type)
+                var error = errors[0];
+                switch (error.Kind)
                 {
-                    case ErrorKind.Validation:
-                        logger.LogWarning("CreateCategory validation error {@Errors}", errors);
-                        return BadRequest(errors);
                     case ErrorKind.Conflict:
-                        logger.LogWarning("CreateCategory conflict error {@Errors}", errors);
-                        return Conflict(errors);
+                        logger.LogWarning("CreateCategory conflict error {@Error}", error);
+                        return Conflict(error);
                     default:
-                        logger.LogError("CreateCategory unexpected error {@Errors}", errors);
-                        return StatusCode(500, errors);
+                        logger.LogError("CreateCategory unhandled error for {request}: {@Error}", request, error);
+                        throw new InvalidOperationException($"Unhandled error kind {error.Kind}");
                 }
             }
         );
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult> GetCategoryById(int id)
+    [ProducesResponseType<CategoryResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<Error>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<CategoryResponse>> GetCategoryById(int id)
     {
         logger.LogInformation("GetCategoryById called with id: {Id}", id);
 
@@ -69,36 +76,44 @@ public class ProductCategoryController : ControllerBase
             },
             errors =>
             {
-                var type = errors.First().Kind; // take first for simplicity
+                var error = errors[0]; // take first for simplicity
 
-                switch (type)
+                switch (error.Kind)
                 {
                     case ErrorKind.NotFound:
-                        logger.LogWarning("GetCategoryById not found error for {Id}: {@Errors}", id, errors);
-                        return NotFound(errors);
+                        logger.LogWarning("GetCategoryById not found error for {Id}: {@Error}", id, error);
+                        return NotFound(error);
                     default:
-                        logger.LogError("GetCategoryById unexpected error {@Errors}", errors);
-                        return StatusCode(500, errors);
+                        logger.LogError("GetCategoryById unhandled error for {Id}: {@Error}", id, error);
+                        throw new InvalidOperationException($"Unhandled error kind {error.Kind}");
                 }
             });
     }
 
     [HttpGet]
-    public async Task<ActionResult> GetCategories()
+    [ProducesResponseType<IReadOnlyList<CategoryResponse>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+    public async Task<ActionResult<IReadOnlyList<CategoryResponse>>> GetCategories()
     {
         logger.LogInformation("GetCategories called");
         var result = await categoryService.GetCategoriesAsync();
         if (result.IsError)
         {
-            logger.LogError("GetCategories unexpected error {@Errors}", result.Errors);
-            return StatusCode(500, result.Errors);
+            logger.LogError("GetCategories unexpected error {@Error}", result.FirstError);
+            return StatusCode(500, result.FirstError);
         }
         logger.LogInformation("GetCategories succeeded");
         return Ok(result.Value);
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateCategory(int id, UpdateCategoryRequest request)
+    [Consumes("application/json")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<Error>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<Error>(StatusCodes.Status409Conflict)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> UpdateCategory(int id, UpdateCategoryRequest request)
     {
         logger.LogInformation("UpdateCategory called with {Id}", id);
 
@@ -112,22 +127,29 @@ public class ProductCategoryController : ControllerBase
             },
             errors =>
             {
-                var type = errors.First().Kind;
-                switch (type)
+                var error = errors[0];
+                switch (error.Kind)
                 {
                     case ErrorKind.NotFound:
-                        logger.LogWarning("UpdateCategory not found error for {Id}: {@Errors}", id, errors);
-                        return NotFound(errors);
+                        logger.LogWarning("UpdateCategory not found error for {Id}: {@Error}", id, error);
+                        return NotFound(error);
+                    case ErrorKind.Conflict:
+                        logger.LogWarning("UpdateCategory conflict error {@Error}", error);
+                        return Conflict(error);
                     default:
-                        logger.LogError("UpdateCategory unexpected error for {Id}: {@Errors}", id, errors);
-                        return StatusCode(500, errors);
+                        logger.LogError("UpdateCategory unhandled error for {Id}: {@Error}", id, error);
+                        throw new InvalidOperationException($"Unhandled error kind {error.Kind}");
                 }
             }
         );
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteCategory(int id)
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType<Error>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> DeleteCategory(int id)
     {
         logger.LogInformation("DeleteCategory called with id: {Id}", id);
 
@@ -141,15 +163,15 @@ public class ProductCategoryController : ControllerBase
             },
             errors =>
             {
-                var type = errors.First().Kind;
-                switch (type)
+                var error = errors[0];
+                switch (error.Kind)
                 {
                     case ErrorKind.NotFound:
-                        logger.LogWarning("DeleteCategory not found error for {Id}: {@Errors}", id, errors);
-                        return NotFound(errors);
+                        logger.LogWarning("DeleteCategory not found error for {Id}: {@Error}", id, error);
+                        return NotFound(error);
                     default:
-                        logger.LogError("DeleteCategory unexpected error for {Id}: {@Errors}", id, errors);
-                        return StatusCode(500, errors);
+                        logger.LogError("DeleteCategory unhandled error for {Id}: {@Error}", id, error);
+                        throw new InvalidOperationException($"Unhandled error kind {error.Kind}");
                 }
             }
         );
