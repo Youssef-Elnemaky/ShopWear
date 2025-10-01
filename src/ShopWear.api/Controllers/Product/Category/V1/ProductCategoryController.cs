@@ -14,27 +14,41 @@ namespace ShopWear.api.Controllers.Product.Category.V1;
 public class ProductCategoryController : ControllerBase
 {
     private readonly ICategoryService categoryService;
+    private readonly ILogger<ProductCategoryController> logger;
 
-    public ProductCategoryController(ICategoryService categoryService)
+    public ProductCategoryController(ICategoryService categoryService, ILogger<ProductCategoryController> logger)
     {
         this.categoryService = categoryService;
+        this.logger = logger;
     }
 
     [HttpPost]
     public async Task<ActionResult> CreateCategory(CreateCategoryRequest request)
     {
+        logger.LogInformation("CreateCategory called with {@request}", request);
         var result = await categoryService.CreateCategoryAsync(request);
 
         return result.Match<ActionResult>(
-            category => CreatedAtAction(nameof(GetCategoryById), new { id = category.Id }, category),
+            category =>
+            {
+                logger.LogInformation("CreateCategory succeeded for {Id}", category.Id);
+                return CreatedAtAction(nameof(GetCategoryById), new { id = category.Id }, category);
+            },
             errors =>
             {
                 var type = errors.First().Kind;
-                return type switch
+                switch (type)
                 {
-                    ErrorKind.Validation => BadRequest(errors),
-                    _ => StatusCode(500, errors)
-                };
+                    case ErrorKind.Validation:
+                        logger.LogWarning("CreateCategory validation error {@Errors}", errors);
+                        return BadRequest(errors);
+                    case ErrorKind.Conflict:
+                        logger.LogWarning("CreateCategory conflict error {@Errors}", errors);
+                        return Conflict(errors);
+                    default:
+                        logger.LogError("CreateCategory unexpected error {@Errors}", errors);
+                        return StatusCode(500, errors);
+                }
             }
         );
     }
@@ -42,44 +56,71 @@ public class ProductCategoryController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult> GetCategoryById(int id)
     {
+        logger.LogInformation("GetCategoryById called with id: {Id}", id);
+
         var result = await categoryService.GetCategoryAsync(id);
+
         return result.Match<ActionResult>(
-            category => Ok(category),
+            category =>
+            {
+                logger.LogInformation("GetCategoryById succeeded for {Id}", id);
+                return Ok(category);
+            },
             errors =>
             {
                 var type = errors.First().Kind; // take first for simplicity
 
-                return type switch
+                switch (type)
                 {
-                    ErrorKind.NotFound => NotFound(errors),
-                    _ => StatusCode(500, errors)
-                };
+                    case ErrorKind.NotFound:
+                        logger.LogWarning("GetCategoryById not found error for {Id}: {@Errors}", id, errors);
+                        return NotFound(errors);
+                    default:
+                        logger.LogError("GetCategoryById unexpected error {@Errors}", errors);
+                        return StatusCode(500, errors);
+                }
             });
     }
 
     [HttpGet]
     public async Task<ActionResult> GetCategories()
     {
+        logger.LogInformation("GetCategories called");
         var result = await categoryService.GetCategoriesAsync();
-
+        if (result.IsError)
+        {
+            logger.LogError("GetCategories unexpected error {@Errors}", result.Errors);
+            return StatusCode(500, result.Errors);
+        }
+        logger.LogInformation("GetCategories succeeded");
         return Ok(result.Value);
     }
 
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateCategory(int id, UpdateCategoryRequest request)
     {
+        logger.LogInformation("UpdateCategory called with {Id}", id);
+
         var result = await categoryService.UpdateCategoryAsync(id, request);
 
         return result.Match<ActionResult>(
-            category => NoContent(),
+            category =>
+            {
+                logger.LogInformation("Category with id: {Id} updated successfully", id);
+                return NoContent();
+            },
             errors =>
             {
                 var type = errors.First().Kind;
-                return type switch
+                switch (type)
                 {
-                    ErrorKind.NotFound => NotFound(errors),
-                    _ => StatusCode(500, errors)
-                };
+                    case ErrorKind.NotFound:
+                        logger.LogWarning("UpdateCategory not found error for {Id}: {@Errors}", id, errors);
+                        return NotFound(errors);
+                    default:
+                        logger.LogError("UpdateCategory unexpected error for {Id}: {@Errors}", id, errors);
+                        return StatusCode(500, errors);
+                }
             }
         );
     }
@@ -87,18 +128,28 @@ public class ProductCategoryController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteCategory(int id)
     {
+        logger.LogInformation("DeleteCategory called with id: {Id}", id);
+
         var result = await categoryService.DeleteCategoryAsync(id);
 
         return result.Match<ActionResult>(
-            category => NoContent(),
+            category =>
+            {
+                logger.LogInformation("DeleteCategory succeeded for {Id}", id);
+                return NoContent();
+            },
             errors =>
             {
                 var type = errors.First().Kind;
-                return type switch
+                switch (type)
                 {
-                    ErrorKind.NotFound => NotFound(errors),
-                    _ => StatusCode(500, errors)
-                };
+                    case ErrorKind.NotFound:
+                        logger.LogWarning("DeleteCategory not found error for {Id}: {@Errors}", id, errors);
+                        return NotFound(errors);
+                    default:
+                        logger.LogError("DeleteCategory unexpected error for {Id}: {@Errors}", id, errors);
+                        return StatusCode(500, errors);
+                }
             }
         );
     }

@@ -16,8 +16,11 @@ public sealed class CategoryService : ICategoryService
     }
 
     public async Task<Result<CategoryResponse>> CreateCategoryAsync(CreateCategoryRequest request)
-    public async Task<Result<CategoryResponse>> CreateCategoryAsync(CreateCategoryRequest request)
     {
+        //check if the name is unique
+        var exists = await _uow.ProductCategories.GetAsync(c => c.Name == request.Name);
+        if (exists is not null) return CategoryError.CategoryNameExists(request.Name);
+
         var category = new ProductCategory()
         {
             Name = request.Name,
