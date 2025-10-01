@@ -10,7 +10,8 @@ using ShopWear.Application.Services.Category;
 namespace ShopWear.api.Controllers.Product.Category.V1;
 
 [ApiController]
-[Route("categories")]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/categories")]
 public class ProductCategoryController : ControllerBase
 {
     private readonly ICategoryService categoryService;
