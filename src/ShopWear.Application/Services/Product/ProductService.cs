@@ -39,9 +39,16 @@ public sealed class ProductService : IProductService
         return ProductDetailResponse.FromEntity(newProduct);
     }
 
-    public Task<Result<Deleted>> DeleteProductAsync(int id)
+    public async Task<Result<Deleted>> DeleteProductAsync(int id)
     {
-        throw new NotImplementedException();
+        //check if the product exists
+        var category = await _uow.Products.GetAsync(p => p.Id == id);
+        if (category is null) return ProductError.ProductNotFound(id);
+
+        await _uow.Products.DeleteAsync(category);
+        await _uow.SaveAsync();
+
+        return ResultTypes.Deleted;
     }
 
     public Task<Result<ProductDetailResponse>> GetProductByIdAsync(int id)

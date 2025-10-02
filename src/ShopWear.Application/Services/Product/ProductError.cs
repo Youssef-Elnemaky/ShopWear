@@ -8,6 +8,8 @@ public static class ProductError
     public static Error CategoryNotFound(int categoryId)
         => Error.NotFound("Product.CategoryId.NotFound", $"Category with id: {categoryId} not found.");
 
+    public static Error ProductNotFound(int productId)
+        => Error.NotFound("Product.Product.NotFound", $"Product with id: {productId} not found.");
     public static Error ProductNameRequired()
         => Error.Validation("Product.Name.Empty", "Product name cannot be empty or white spaces.");
 
