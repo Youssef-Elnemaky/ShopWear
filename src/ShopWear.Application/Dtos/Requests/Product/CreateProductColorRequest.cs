@@ -11,7 +11,7 @@ public record class CreateProductColorRequest
     public string Color { get; init; } = "";
 
     [MinLength(1, ErrorMessage = "Color must have at least one variant")]
-    [MaxLength(5, ErrorMessage = "Color cannot have more than 5 variants")]
+    [MaxLength(6, ErrorMessage = "Color cannot have more than 6 variants")]
     public List<CreateProductVariantRequest> ProductVariants { get; init; } = [];
 
     public ProductColor ToEntity()

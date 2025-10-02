@@ -26,7 +26,7 @@ public static class ProductError
         => Error.Validation("Product.Colors.Color.Length", "Color cannot exceed 50 characters.");
 
     public static Error ProductVariantsCount()
-        => Error.Validation("Product.Colors.Variant.Count", "Color must have (min:1)-(max:5) variant/s");
+        => Error.Validation("Product.Colors.Variant.Count", "Color must have (min:1)-(max:6) variant/s");
 
     public static Error ProductColorConflict(string color)
         => Error.Conflict(

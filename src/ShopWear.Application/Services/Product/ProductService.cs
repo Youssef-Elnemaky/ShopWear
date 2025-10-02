@@ -51,9 +51,17 @@ public sealed class ProductService : IProductService
         return ResultTypes.Deleted;
     }
 
-    public Task<Result<ProductDetailResponse>> GetProductByIdAsync(int id)
+    public async Task<Result<ProductDetailResponse>> GetProductByIdAsync(int id)
     {
-        throw new NotImplementedException();
+        //get the productResponse using projection 
+        var product = await _uow.Products.GetByIdWithDetailsAsync(id);
+        if (product is null) return ProductError.ProductNotFound(id);
+
+        var productResponse = ProductDetailResponse.FromEntity(product);
+        //check if the product exists for the passed id
+        if (productResponse is null) return ProductError.ProductNotFound(id);
+
+        return productResponse;
     }
 
     public Task<Result<PagedResult<ProductSummaryResponse>>> GetProductsAsync()
@@ -86,7 +94,7 @@ public sealed class ProductService : IProductService
             if (!uniqueColors.Add(color.Color)) return ProductError.ProductColorConflict(color.Color);
 
             // color must have a variant
-            if (color.ProductVariants.Count is < 1 or > 5) return ProductError.ProductVariantsCount();
+            if (color.ProductVariants.Count is < 1 or > 6) return ProductError.ProductVariantsCount();
             //validate variants:
             var uniqueVariants = new HashSet<string>();
 

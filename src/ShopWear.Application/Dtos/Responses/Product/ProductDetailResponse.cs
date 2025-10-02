@@ -16,7 +16,7 @@ public record class ProductDetailResponse
             Id = product.Id,
             Name = product.Name,
             Description = product.Description ?? "",
-            Category = product.Category.Name,
+            Category = product.Category != null ? product.Category.Name : "",
             ProductColors = product.ProductColors.Select(ProductColorResponse.FromEntity).ToList()
         };
 }
