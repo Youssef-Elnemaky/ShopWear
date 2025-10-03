@@ -42,8 +42,8 @@ public static class ProductError
         );
     }
 
-    public static Error ProductVariantSkuInvalid()
-        => Error.Validation("Product.Colors.Color.Variants.Sku", "Variant Sku must be at least 1.");
+    public static Error ProductVariantStockInvalid()
+        => Error.Validation("Product.Colors.Color.Variants.Stock", "Variant Stock must be at least 1.");
     public static Error ProductVariantPriceInvalid()
         => Error.Validation("Product.Color.Color.Variants.Price", "Variant price cannot be 0");
     public static Error ProductVariantConflict(string variantSize)

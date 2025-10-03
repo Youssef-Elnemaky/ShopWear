@@ -93,7 +93,7 @@ public sealed class ProductService : IProductService
             ProductVariants = c.ProductVariants.Select(v => new ProductVariant()
             {
                 Size = v.Size,
-                Sku = v.Sku,
+                Stock = v.Stock,
                 Price = v.Price
             }).ToList()
         }).ToList();
@@ -132,7 +132,7 @@ public sealed class ProductService : IProductService
                 //check if he entered the right variant size
                 if (!Enum.IsDefined(typeof(ProductSize), variant.Size)) return ProductError.ProductVariantSizeInvalid((int)variant.Size);
                 if (!uniqueVariants.Add(variant.Size.ToString())) return ProductError.ProductVariantConflict(variant.Size.ToString());
-                if (variant.Sku < 1) return ProductError.ProductVariantSkuInvalid();
+                if (variant.Stock < 1) return ProductError.ProductVariantStockInvalid();
                 if (variant.Price <= 0) return ProductError.ProductVariantPriceInvalid();
             }
         }
@@ -167,7 +167,7 @@ public sealed class ProductService : IProductService
                 //check if he entered the right variant size
                 if (!Enum.IsDefined(typeof(ProductSize), variant.Size)) return ProductError.ProductVariantSizeInvalid((int)variant.Size);
                 if (!uniqueVariants.Add(variant.Size.ToString())) return ProductError.ProductVariantConflict(variant.Size.ToString());
-                if (variant.Sku < 1) return ProductError.ProductVariantSkuInvalid();
+                if (variant.Stock < 1) return ProductError.ProductVariantStockInvalid();
                 if (variant.Price <= 0) return ProductError.ProductVariantPriceInvalid();
             }
         }

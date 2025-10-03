@@ -10,7 +10,7 @@ public record class ProductVariantResponse
 
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public ProductSize Size { get; init; }
-    public int Sku { get; init; }
+    public int Stock { get; init; }
     public decimal Price { get; init; }
 
     public static ProductVariantResponse FromEntity(ProductVariant productVariant)
@@ -18,7 +18,7 @@ public record class ProductVariantResponse
         {
             Id = productVariant.Id,
             Size = productVariant.Size,
-            Sku = productVariant.Sku,
+            Stock = productVariant.Stock,
             Price = productVariant.Price
         };
 }
