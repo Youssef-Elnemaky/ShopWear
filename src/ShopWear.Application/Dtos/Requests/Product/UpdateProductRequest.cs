@@ -16,5 +16,6 @@ public record class UpdateProductRequest
     public string? Description { get; init; }
 
     [MinLength(1, ErrorMessage = "Product must have at least one color")]
-    public List<CreateProductColorRequest> ProductColors { get; init; } = [];
+    [MaxLength(5, ErrorMessage = "Product cannot have more than 5 colors")]
+    public List<UpdateProductColorRequest> ProductColors { get; init; } = [];
 }

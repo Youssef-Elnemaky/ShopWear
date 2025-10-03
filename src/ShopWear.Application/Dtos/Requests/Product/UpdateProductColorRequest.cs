@@ -10,5 +10,6 @@ public record class UpdateProductColorRequest
     public string Color { get; init; } = "";
 
     [MinLength(1, ErrorMessage = "Product must have at least one color")]
-    public List<CreateProductVariantRequest> ProductVariants { get; init; } = [];
+    [MaxLength(6, ErrorMessage = "Color cannot have more than 6 variants")]
+    public List<UpdateProductVariantRequest> ProductVariants { get; init; } = [];
 }
