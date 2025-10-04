@@ -19,6 +19,9 @@ public class ProductConfig : IEntityTypeConfiguration<Product>
         // Description
         builder.Property(p => p.Description).HasMaxLength(4000);
 
+        // MinPrice
+        builder.Property(p => p.MinPrice).HasPrecision(18, 2);
+
         // Category Relationship
         builder.HasOne(p => p.Category)
                 .WithMany(c => c.Products)
