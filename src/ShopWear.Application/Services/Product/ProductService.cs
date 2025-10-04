@@ -113,6 +113,7 @@ public sealed class ProductService : IProductService
         if (request.ProductColors.Count is < 1 or > 5) return ProductError.ProductVariantsCount();
 
         var uniqueColors = new HashSet<string>();
+        bool hasMainColorFlag = false;
         foreach (var color in request.ProductColors)
         {
             //empty color strings
@@ -121,7 +122,10 @@ public sealed class ProductService : IProductService
             if (color.Color.Length > 200) return ProductError.ProductColorLength();
             //color uniqueness
             if (!uniqueColors.Add(color.Color)) return ProductError.ProductColorConflict(color.Color);
-
+            // check against the flag to see disallow multiple main colors on the product.
+            if (hasMainColorFlag && color.IsMainColor) return ProductError.ProductMultipleMainColor();
+            // first main color? set the flag
+            if (!hasMainColorFlag && color.IsMainColor) hasMainColorFlag = true;
             // color must have a variant
             if (color.ProductVariants.Count is < 1 or > 6) return ProductError.ProductVariantsCount();
             //validate variants:
@@ -136,8 +140,12 @@ public sealed class ProductService : IProductService
                 if (variant.Price <= 0) return ProductError.ProductVariantPriceInvalid();
             }
         }
+        if (!hasMainColorFlag) return ProductError.ProductNoMainColor();
         return ResultTypes.Success;
     }
+
+
+    //probably move this and create to ValidateCommon
     private Result<Success> ValidateUpdateRequest(UpdateProductRequest request)
     {
         //validate on the name
@@ -148,6 +156,7 @@ public sealed class ProductService : IProductService
         if (request.ProductColors.Count is < 1 or > 5) return ProductError.ProductVariantsCount();
 
         var uniqueColors = new HashSet<string>();
+        bool hasMainColorFlag = false;
         foreach (var color in request.ProductColors)
         {
             //empty color strings
@@ -156,7 +165,11 @@ public sealed class ProductService : IProductService
             if (color.Color.Length > 200) return ProductError.ProductColorLength();
             //color uniqueness
             if (!uniqueColors.Add(color.Color)) return ProductError.ProductColorConflict(color.Color);
-
+            // check against the flag to see disallow multiple main colors on the product.
+            if (hasMainColorFlag && color.IsMainColor) return ProductError.ProductMultipleMainColor();
+            // first main color? set the flag
+            if (!hasMainColorFlag && color.IsMainColor) hasMainColorFlag = true;
+            // color must have a variant
             // color must have a variant
             if (color.ProductVariants.Count is < 1 or > 6) return ProductError.ProductVariantsCount();
             //validate variants:
@@ -171,6 +184,7 @@ public sealed class ProductService : IProductService
                 if (variant.Price <= 0) return ProductError.ProductVariantPriceInvalid();
             }
         }
+        if (!hasMainColorFlag) return ProductError.ProductNoMainColor();
         return ResultTypes.Success;
     }
 

@@ -28,6 +28,12 @@ public static class ProductError
     public static Error ProductVariantsCount()
         => Error.Validation("Product.Colors.Variant.Count", "Color must have (min:1)-(max:6) variant/s");
 
+    public static Error ProductMultipleMainColor()
+        => Error.Validation("Product.Colors.IsMainColor.Multiple", "Only 1 main color is allowed");
+
+    public static Error ProductNoMainColor()
+        => Error.Validation("Product.Colors.IsMainColor.NoMainColor", "A single main color must be selected.");
+
     public static Error ProductColorConflict(string color)
         => Error.Conflict(
             "Product.Colors.Color.Unique",
