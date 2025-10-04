@@ -4,6 +4,7 @@ public class ProductColor
 {
     public int Id { get; set; }
     public string Color { get; set; } = null!;
+    public bool IsMainColor { get; set; }
 
     // Navigation
     public int ProductId { get; set; }
