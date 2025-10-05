@@ -24,6 +24,8 @@ public static class ProductError
         => Error.Validation("Product.Colors.Color.Required", "Color cannot be empty or white spaces.");
     public static Error ProductColorLength()
         => Error.Validation("Product.Colors.Color.Length", "Color cannot exceed 50 characters.");
+    public static Error ProductColorNotFound(int colorId)
+        => Error.NotFound("Product.Color.NotFound", $"Product color with {colorId} not found.");
 
     public static Error ProductVariantsCount()
         => Error.Validation("Product.Colors.Variant.Count", "Color must have (min:1)-(max:6) variant/s");
@@ -53,7 +55,8 @@ public static class ProductError
     public static Error ProductVariantPriceInvalid()
         => Error.Validation("Product.Color.Color.Variants.Price", "Variant price cannot be 0");
     public static Error ProductVariantConflict(string variantSize)
-=> Error.Conflict(
-    "Product.Colors.Color.Variant.Size.Unique",
-    $"Variant size with value {variantSize} was already supplied. All variant sizes values must be unique");
+        => Error.Conflict(
+        "Product.Colors.Color.Variant.Size.Unique",
+        $"Variant size with value {variantSize} was already supplied. All variant sizes values must be unique");
+
 }

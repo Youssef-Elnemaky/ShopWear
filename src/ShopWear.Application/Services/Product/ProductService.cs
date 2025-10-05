@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Http;
 using ShopWear.Application.Common.Errors;
 using ShopWear.Application.Common.Pagination;
 using ShopWear.Application.Common.Results;
 using ShopWear.Application.Dtos.Requests.Products;
 using ShopWear.Application.Dtos.Responses.Products;
+using ShopWear.Application.Services.Files;
 using ShopWear.DataAccess.Enums.ProductEnums;
 using ShopWear.DataAccess.Interfaces.Repositories;
 using ShopWear.DataAccess.Interfaces.Repositories.Products;
@@ -13,11 +15,14 @@ namespace ShopWear.Application.Services.Products;
 public sealed class ProductService : IProductService
 {
     private readonly IUnitOfWork _uow;
+    private readonly IFileService _fileService;
 
-    public ProductService(IUnitOfWork uow)
+    public ProductService(IUnitOfWork uow, IFileService fileService)
     {
         _uow = uow;
+        _fileService = fileService;
     }
+
     public async Task<Result<ProductDetailResponse>> CreateProductAsync(CreateProductRequest request)
     {
         //validate that the category exists
@@ -69,6 +74,47 @@ public sealed class ProductService : IProductService
         throw new NotImplementedException();
     }
 
+
+    public async Task<Result<ProductImageResponse>> AddImageAsync(int productId, int colorId, IFormFile file, bool isMain)
+    {
+        var product = await _uow.Products.GetByProductIdAndColorIdAsync(productId, colorId, false);
+        if (product is null) return ProductError.ProductNotFound(productId);
+
+        var color = product.ProductColors.FirstOrDefault();
+        if (color is null) return ProductError.ProductColorNotFound(colorId);
+
+        //save the image
+        var saved = await _fileService.SaveAsync(file, "uploads/products", FileKind.Image, 5 * 1024 * 1024);
+        if (saved.IsError) return saved.FirstError;
+
+        if (isMain)
+        {
+            foreach (var img in color.ProductImages)
+            {
+                img.IsMainImage = false;
+            }
+        }
+
+        var imgEntity = new ProductImage()
+        {
+            ImageUrl = saved.Value,
+            IsMainImage = isMain,
+            ProductColorId = colorId
+        };
+        color.ProductImages.Add(imgEntity);
+        await _uow.SaveAsync();
+        return ProductImageResponse.FromEntity(imgEntity);
+    }
+
+    public Task<Result<Success>> RemoveImageAsync(int productId, int colorId, int imageId)
+    {
+        throw new NotImplementedException();
+    }
+
+    public Task<Result<Success>> SetMainImageAsync(int productId, int colorId, int imageId)
+    {
+        throw new NotImplementedException();
+    }
 
     public async Task<Result<Updated>> UpdateProductAsync(int id, UpdateProductRequest request)
     {

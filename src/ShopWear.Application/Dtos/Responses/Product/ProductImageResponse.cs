@@ -6,7 +6,7 @@ public record class ProductImageResponse
 {
     public Guid Id { get; init; }
     public string ImageUrl { get; init; } = "";
-
+    public bool IsMain { get; init; }
     public static ProductImageResponse FromEntity(ProductImage productImage)
         => new ProductImageResponse()
         {

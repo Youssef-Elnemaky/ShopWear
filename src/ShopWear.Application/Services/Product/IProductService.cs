@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using ShopWear.Application.Common.Pagination;
 using ShopWear.Application.Common.Results;
 using ShopWear.Application.Dtos.Requests.Products;
@@ -12,4 +13,7 @@ public interface IProductService
     public Task<Result<PagedResult<ProductSummaryResponse>>> GetProductsAsync(); // will be updated later to add filters
     public Task<Result<Updated>> UpdateProductAsync(int id, UpdateProductRequest request);
     public Task<Result<Deleted>> DeleteProductAsync(int id);
+    Task<Result<ProductImageResponse>> AddImageAsync(int productId, int colorId, IFormFile file, bool isMain);
+    Task<Result<Success>> RemoveImageAsync(int productId, int colorId, int imageId);
+    Task<Result<Success>> SetMainImageAsync(int productId, int colorId, int imageId);
 }

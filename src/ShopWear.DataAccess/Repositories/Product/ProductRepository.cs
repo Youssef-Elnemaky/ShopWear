@@ -29,4 +29,12 @@ public class ProductRepository : Repository<Product>, IProductRepository
 
         return await query.FirstOrDefaultAsync(p => p.Id == id);
     }
+
+    public async Task<Product?> GetByProductIdAndColorIdAsync(int productId, int colorId, bool asNoTracking = true)
+    {
+        IQueryable<Product> query = asNoTracking ? _db.Products.AsNoTracking() : _db.Products;
+        query = query.Include(p => p.ProductColors.Where(c => c.Id == colorId)).ThenInclude(c => c.ProductImages);
+
+        return await query.FirstOrDefaultAsync(p => p.Id == productId);
+    }
 }
