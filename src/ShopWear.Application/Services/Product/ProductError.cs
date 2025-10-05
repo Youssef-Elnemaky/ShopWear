@@ -59,4 +59,7 @@ public static class ProductError
         "Product.Colors.Color.Variant.Size.Unique",
         $"Variant size with value {variantSize} was already supplied. All variant sizes values must be unique");
 
+    public static Error ProductImageNotFound(Guid imageId)
+        => Error.NotFound("Product.Image.NotFound", $"Product image with id: {imageId} not found.");
+
 }

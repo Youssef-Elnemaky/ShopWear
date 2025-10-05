@@ -106,12 +106,24 @@ public sealed class ProductService : IProductService
         return ProductImageResponse.FromEntity(imgEntity);
     }
 
-    public Task<Result<Success>> RemoveImageAsync(int productId, int colorId, int imageId)
+    public async Task<Result<Success>> RemoveImageAsync(int productId, int colorId, Guid imageId)
     {
-        throw new NotImplementedException();
+        var product = await _uow.Products.GetByProductIdAndColorIdAsync(productId, colorId, false);
+        if (product is null) return ProductError.ProductNotFound(productId);
+
+        var color = product.ProductColors.FirstOrDefault();
+        if (color is null) return ProductError.ProductColorNotFound(colorId);
+
+        var image = color.ProductImages.FirstOrDefault(i => i.Id == imageId);
+        if (image is null) return ProductError.ProductImageNotFound(imageId);
+
+        await _fileService.DeleteAsync(image.ImageUrl);
+        color.ProductImages.Remove(image);
+        await _uow.SaveAsync();
+        return ResultTypes.Success;
     }
 
-    public Task<Result<Success>> SetMainImageAsync(int productId, int colorId, int imageId)
+    public Task<Result<Success>> SetMainImageAsync(int productId, int colorId, Guid imageId)
     {
         throw new NotImplementedException();
     }
@@ -233,5 +245,4 @@ public sealed class ProductService : IProductService
         if (!hasMainColorFlag) return ProductError.ProductNoMainColor();
         return ResultTypes.Success;
     }
-
 }
