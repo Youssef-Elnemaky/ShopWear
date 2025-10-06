@@ -123,9 +123,21 @@ public sealed class ProductService : IProductService
         return ResultTypes.Success;
     }
 
-    public Task<Result<Success>> SetMainImageAsync(int productId, int colorId, Guid imageId)
+    public async Task<Result<Success>> SetMainImageAsync(int productId, int colorId, Guid imageId)
     {
-        throw new NotImplementedException();
+        var product = await _uow.Products.GetByProductIdAndColorIdAsync(productId, colorId, false);
+        if (product is null) return ProductError.ProductNotFound(productId);
+
+        var color = product.ProductColors.FirstOrDefault();
+        if (color is null) return ProductError.ProductColorNotFound(colorId);
+
+        foreach (var img in color.ProductImages)
+        {
+            img.IsMainImage = false;
+            if (img.Id == imageId) img.IsMainImage = true;
+        }
+        await _uow.SaveAsync();
+        return ResultTypes.Success;
     }
 
     public async Task<Result<Updated>> UpdateProductAsync(int id, UpdateProductRequest request)

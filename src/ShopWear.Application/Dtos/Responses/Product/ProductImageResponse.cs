@@ -11,6 +11,7 @@ public record class ProductImageResponse
         => new ProductImageResponse()
         {
             Id = productImage.Id,
-            ImageUrl = productImage.ImageUrl
+            ImageUrl = productImage.ImageUrl,
+            IsMain = productImage.IsMainImage
         };
 }
