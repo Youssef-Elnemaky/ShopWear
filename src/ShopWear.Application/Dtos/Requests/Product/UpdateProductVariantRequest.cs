@@ -6,6 +6,8 @@ namespace ShopWear.Application.Dtos.Requests.Products;
 
 public record class UpdateProductVariantRequest
 {
+    public int? Id { get; init; } // if Null => new variant
+
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public ProductSize Size { get; init; }
 

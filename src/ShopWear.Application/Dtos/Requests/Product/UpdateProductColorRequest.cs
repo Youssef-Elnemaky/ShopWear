@@ -4,6 +4,8 @@ namespace ShopWear.Application.Dtos.Requests.Products;
 
 public record class UpdateProductColorRequest
 {
+    public int? Id { get; init; } // if null => new color
+
     [Required(ErrorMessage = "Product name is required.")]
     [MaxLength(200, ErrorMessage = "Product name cannot exceed 200 characters.")]
     [RegularExpression(@".*\S.*", ErrorMessage = "Product name cannot be whitespace.")]

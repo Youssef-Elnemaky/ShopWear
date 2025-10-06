@@ -36,6 +36,13 @@ public sealed class ProductService : IProductService
         // create a new product object from the request
         var newProduct = request.ToEntity();
 
+        //get the min price
+        newProduct.MinPrice = newProduct.ProductColors
+        .SelectMany(c => c.ProductVariants)
+        .Select(v => v.Price)
+        .DefaultIfEmpty(0m)
+        .Min();
+
         // save it to the db
         newProduct = await _uow.Products.AddAsync(newProduct);
         await _uow.SaveAsync();
@@ -150,21 +157,91 @@ public sealed class ProductService : IProductService
         var validationResult = ValidateUpdateRequest(request);
         if (validationResult.IsError) return validationResult.FirstError;
 
+        product.Name = request.Name;
+        product.Description = request.Description;
+        product.CategoryId = request.CategoryId;
 
-        // remove old
-        product.ProductColors.Clear();
-        product.ProductColors = request.ProductColors.Select(c => new ProductColor()
+        var existingColorById = product.ProductColors.ToDictionary(c => c.Id);
+
+        var incomingColorIds = request.ProductColors.Where(c => c.Id.HasValue).Select(c => c.Id!.Value).ToHashSet();
+        var colorsToRemove = product.ProductColors.Where(c => !incomingColorIds.Contains(c.Id)).ToList();
+
+        //save the urls of the images before we remove them from the product so we can remove them from the file system later on
+        var urlsToDelete = colorsToRemove.SelectMany(c => c.ProductImages).Select(i => i.ImageUrl).ToList();
+
+        foreach (var color in colorsToRemove) product.ProductColors.Remove(color);
+
+        //adding or updating
+        foreach (var colorRequest in request.ProductColors)
         {
-            Color = c.Color,
-            ProductVariants = c.ProductVariants.Select(v => new ProductVariant()
+            if (colorRequest.Id is null || !existingColorById.TryGetValue(colorRequest.Id.Value, out var color))
             {
-                Size = v.Size,
-                Stock = v.Stock,
-                Price = v.Price
-            }).ToList()
-        }).ToList();
+                //new color case as there was no id provided and also the id that was passed was not in the original color list
+                var newColor = new ProductColor()
+                {
+                    Color = colorRequest.Color,
+                    IsMainColor = colorRequest.IsMainColor,
+                    ProductVariants = colorRequest.ProductVariants.Select(v => new ProductVariant()
+                    {
+                        Size = v.Size,
+                        Stock = v.Stock,
+                        Price = v.Price
+                    }).ToList()
+                };
+                product.ProductColors.Add(newColor);
+            }
+            else
+            {
+                //not a new color so update it
+                color.Color = colorRequest.Color;
+                color.IsMainColor = colorRequest.IsMainColor;
+
+                var variantsById = color.ProductVariants.ToDictionary(v => v.Id);
+
+                var incomingVariantIds = colorRequest.ProductVariants.Where(v => v.Id.HasValue).Select(v => v.Id!.Value).ToHashSet();
+                var variantsToRemove = color.ProductVariants.Where(v => !incomingVariantIds.Contains(v.Id)).ToList();
+
+                foreach (var v in variantsToRemove) color.ProductVariants.Remove(v);
+
+                foreach (var variantRequest in colorRequest.ProductVariants)
+                {
+                    if (variantRequest.Id is null || !variantsById.TryGetValue(variantRequest.Id.Value, out var variant))
+                    {
+                        //new variant
+                        var newVariant = new ProductVariant()
+                        {
+                            Size = variantRequest.Size,
+                            Stock = variantRequest.Stock,
+                            Price = variantRequest.Price
+                        };
+                        color.ProductVariants.Add(newVariant);
+                    }
+                    else
+                    {
+                        // already here so update it
+                        variant.Size = variantRequest.Size;
+                        variant.Stock = variantRequest.Stock;
+                        variant.Price = variantRequest.Price;
+                    }
+                }
+            }
+        }
+
+        var requestedMain = product.ProductColors.FirstOrDefault(c => c.IsMainColor) ?? product.ProductColors.FirstOrDefault();
+        if (requestedMain is not null)
+            foreach (var c in product.ProductColors) c.IsMainColor = ReferenceEquals(c, requestedMain);
+
+        // recompute min price denormalized
+        product.MinPrice = product.ProductColors
+            .SelectMany(c => c.ProductVariants)
+            .Select(v => v.Price)
+            .DefaultIfEmpty(0m)
+            .Min();
 
         await _uow.SaveAsync();
+
+        foreach (var url in urlsToDelete) await _fileService.DeleteAsync(url);
+
         return ResultTypes.Updated;
     }
 
