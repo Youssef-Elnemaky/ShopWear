@@ -75,7 +75,7 @@ public sealed class ProductService : IProductService
     }
 
 
-    public async Task<Result<ProductImageResponse>> AddImageAsync(int productId, int colorId, IFormFile file, bool isMain)
+    public async Task<Result<List<ProductImageResponse>>> AddImageAsync(int productId, int colorId, List<IFormFile> files)
     {
         var product = await _uow.Products.GetByProductIdAndColorIdAsync(productId, colorId, false);
         if (product is null) return ProductError.ProductNotFound(productId);
@@ -84,26 +84,22 @@ public sealed class ProductService : IProductService
         if (color is null) return ProductError.ProductColorNotFound(colorId);
 
         //save the image
-        var saved = await _fileService.SaveAsync(file, "uploads/products", FileKind.Image, 5 * 1024 * 1024);
-        if (saved.IsError) return saved.FirstError;
-
-        if (isMain)
+        foreach (var file in files)
         {
-            foreach (var img in color.ProductImages)
+            var saved = await _fileService.SaveAsync(file, "uploads/products", FileKind.Image, 5 * 1024 * 1024);
+            if (saved.IsError) return saved.FirstError;
+            var imgEntity = new ProductImage()
             {
-                img.IsMainImage = false;
-            }
+                ImageUrl = saved.Value,
+                ProductColorId = colorId
+            };
+            color.ProductImages.Add(imgEntity);
         }
 
-        var imgEntity = new ProductImage()
-        {
-            ImageUrl = saved.Value,
-            IsMainImage = isMain,
-            ProductColorId = colorId
-        };
-        color.ProductImages.Add(imgEntity);
         await _uow.SaveAsync();
-        return ProductImageResponse.FromEntity(imgEntity);
+
+        var imagesResponse = color.ProductImages.Select(i => ProductImageResponse.FromEntity(i)).ToList();
+        return imagesResponse;
     }
 
     public async Task<Result<Success>> RemoveImageAsync(int productId, int colorId, Guid imageId)

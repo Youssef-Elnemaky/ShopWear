@@ -13,7 +13,7 @@ public interface IProductService
     public Task<Result<PagedResult<ProductSummaryResponse>>> GetProductsAsync(); // will be updated later to add filters
     public Task<Result<Updated>> UpdateProductAsync(int id, UpdateProductRequest request);
     public Task<Result<Deleted>> DeleteProductAsync(int id);
-    Task<Result<ProductImageResponse>> AddImageAsync(int productId, int colorId, IFormFile file, bool isMain);
+    Task<Result<List<ProductImageResponse>>> AddImageAsync(int productId, int colorId, List<IFormFile> files);
     Task<Result<Success>> RemoveImageAsync(int productId, int colorId, Guid imageId);
     Task<Result<Success>> SetMainImageAsync(int productId, int colorId, Guid imageId);
 }
