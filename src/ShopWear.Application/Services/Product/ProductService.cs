@@ -76,9 +76,26 @@ public sealed class ProductService : IProductService
         return productResponse;
     }
 
-    public Task<Result<PagedResult<ProductSummaryResponse>>> GetProductsAsync()
+    public async Task<Result<PagedResult<ProductSummaryResponse>>> GetProductsAsync(ProductListParams queryParams)
     {
-        throw new NotImplementedException();
+        var pageSize = Math.Clamp(queryParams.PageSize, 1, 100);
+        var page = queryParams.Page < 1 ? 1 : queryParams.Page;
+
+        var fixedParams = queryParams with { PageSize = pageSize, Page = page };
+
+        var (products, total) = await _uow.Products.GetPagedAsync(fixedParams);
+
+        var data = products.Select(p =>
+        {
+            var mainColor = p.ProductColors.FirstOrDefault();
+            var imgUrl = mainColor?.ProductImages.OrderByDescending(i => i.IsMainImage)
+                                                 .ThenBy(i => i.Id)
+                                                 .Select(i => i.ImageUrl)
+                                                 .FirstOrDefault();
+            return new ProductSummaryResponse(p.Id, p.Name, p.Category.Name, p.Category.Id, p.MinPrice, imgUrl);
+        }).ToList();
+
+        return new PagedResult<ProductSummaryResponse>(data, page, pageSize, total);
     }
 
 

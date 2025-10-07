@@ -10,7 +10,7 @@ public interface IProductService
 {
     public Task<Result<ProductDetailResponse>> CreateProductAsync(CreateProductRequest request);
     public Task<Result<ProductDetailResponse>> GetProductByIdAsync(int id);
-    public Task<Result<PagedResult<ProductSummaryResponse>>> GetProductsAsync(); // will be updated later to add filters
+    public Task<Result<PagedResult<ProductSummaryResponse>>> GetProductsAsync(ProductListParams queryParams);
     public Task<Result<Updated>> UpdateProductAsync(int id, UpdateProductRequest request);
     public Task<Result<Deleted>> DeleteProductAsync(int id);
     Task<Result<List<ProductImageResponse>>> AddImageAsync(int productId, int colorId, List<IFormFile> files);

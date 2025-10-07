@@ -37,4 +37,31 @@ public class ProductRepository : Repository<Product>, IProductRepository
 
         return await query.FirstOrDefaultAsync(p => p.Id == productId);
     }
+
+    public async Task<(IReadOnlyList<Product> Items, int Total)> GetPagedAsync(ProductListParams queryParams)
+    {
+        IQueryable<Product> query = _db.Products;
+        if (!string.IsNullOrWhiteSpace(queryParams.Search)) query = query.Where(p => p.Name.Contains(queryParams.Search));
+        if (queryParams.CategoryId.HasValue) query = query.Where(p => p.CategoryId == queryParams.CategoryId.Value);
+
+        query = (queryParams.SortBy.ToLowerInvariant(), queryParams.Desc) switch
+        {
+            ("price", false) => query = query.OrderBy(p => p.MinPrice),
+            ("price", true) => query = query.OrderByDescending(p => p.MinPrice),
+            ("name", false) => query = query.OrderBy(p => p.Name),
+            _ => query = query.OrderByDescending(p => p.Name)
+            // ("name", true) => query = query.OrderByDescending(p => p.Name)
+        };
+
+        var total = await query.CountAsync();
+
+        query = query.Include(p => p.Category)
+                     .Include(p => p.ProductColors.Where(c => c.IsMainColor))
+                        .ThenInclude(c => c.ProductImages);
+
+        var skip = Math.Max(0, (queryParams.Page - 1) * queryParams.PageSize);
+
+        var products = await query.Skip(skip).Take(queryParams.PageSize).ToListAsync();
+        return (products, total);
+    }
 }
