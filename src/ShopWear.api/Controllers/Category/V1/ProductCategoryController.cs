@@ -8,7 +8,7 @@ using ShopWear.Application.Dtos.Requests.Category;
 using ShopWear.Application.Dtos.Responses.Category;
 using ShopWear.Application.Services.Category;
 
-namespace ShopWear.api.Controllers.Product.Category.V1;
+namespace ShopWear.api.Controllers.Category.V1;
 
 [ApiController]
 [ApiVersion("1.0")]
