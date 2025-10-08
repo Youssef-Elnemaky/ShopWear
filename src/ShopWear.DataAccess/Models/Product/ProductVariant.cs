@@ -7,7 +7,7 @@ public class ProductVariant
 {
     public int Id { get; set; }
     public ProductSize Size { get; set; }
-    public int Sku { get; set; }
+    public int Stock { get; set; }
     public decimal Price { get; set; }
 
     // Navigation
