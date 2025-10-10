@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using ShopWear.api.OpenApi.Transformers;
 using ShopWear.Application;
+using ShopWear.Application.Services.Email;
 
 namespace ShopWear.api;
 
@@ -11,7 +12,10 @@ public static class DependencyInjection
     {
         // API level
         services.AddCustomApiVersioning()
-                .AddApiDocumentation();
+                .AddApiDocumentation()
+                .AddScoped<IEmailService, MailkitSmtpEmailSender>()
+                .Configure<SmtpOptions>(configuration.GetSection("Smtp"));
+
 
         // register application services (it internally registers data access services as well)
         services.AddApplication(configuration);
