@@ -10,5 +10,6 @@ public class ApplicationUserConfig : IEntityTypeConfiguration<ApplicationUser>
     {
         builder.Property(u => u.FirstName).HasColumnType("VARCHAR(30)");
         builder.Property(u => u.LastName).HasColumnType("VARCHAR(30)");
+        builder.HasIndex(u => u.Email).IsUnique();
     }
 }
