@@ -14,11 +14,12 @@ public class RefreshTokenRepository : Repository<RefreshToken>, IRefreshTokenRep
         _db = db;
     }
 
-    public async Task<RefreshToken?> GetByTokenAsync(string token)
+    public async Task<RefreshToken?> GetByTokenHashAsync(string tokenHash)
     {
         var refreshToken = await _db.RefreshTokens
+            .AsNoTracking()
             .Include(rt => rt.User)
-            .FirstOrDefaultAsync(rt => rt.Token == token);
+            .FirstOrDefaultAsync(rt => rt.TokenHash == tokenHash);
 
         return refreshToken;
     }

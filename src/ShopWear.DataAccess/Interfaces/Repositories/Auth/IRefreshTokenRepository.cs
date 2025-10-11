@@ -4,5 +4,5 @@ namespace ShopWear.DataAccess.Interfaces.Repositories.Auth;
 
 public interface IRefreshTokenRepository : IRepository<RefreshToken>
 {
-    Task<RefreshToken?> GetByTokenAsync(string token);
+    Task<RefreshToken?> GetByTokenHashAsync(string tokenHash);
 }
