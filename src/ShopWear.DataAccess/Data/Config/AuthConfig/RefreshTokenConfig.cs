@@ -12,8 +12,8 @@ public class RefreshTokenConfig : IEntityTypeConfiguration<RefreshToken>
         builder.HasKey(rt => rt.Id);
 
         // setting the max length of the token
-        builder.Property(rt => rt.Token).HasMaxLength(128).HasColumnType("VARCHAR(128)");
-        builder.HasIndex(rt => rt.Token).IsUnique();
+        builder.Property(rt => rt.TokenHash).HasMaxLength(128).HasColumnType("VARCHAR(128)");
+        builder.HasIndex(rt => rt.TokenHash).IsUnique();
 
         // setting the relation between the refresh tokens and the user
         builder.HasOne(rt => rt.User)
